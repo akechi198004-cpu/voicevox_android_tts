@@ -1,0 +1,12 @@
+.gradle/
+.gradle-dist/
+.idea/
+local.properties
+**/build/
+.voicevox-download/
+*.iml
+# Downloaded third party runtime/model binaries
+third_party/maven/jp/
+app/src/main/jniLibs/arm64-v8a/*.so
+app/src/main/assets/voicevox/models/*.vvm
+app/src/main/assets/voicevox/dict/open_jtalk_dic_utf_8-1.11/
