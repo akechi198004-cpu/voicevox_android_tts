@@ -25,14 +25,10 @@ final class VoiceOptions {
     }
 
     static final List<Option> ALL = Collections.unmodifiableList(Arrays.asList(
-            new Option("WhiteCUL / ノーマル", 23, "8.vvm", "VOICEVOX:WhiteCUL"),
-            new Option("WhiteCUL / たのしい", 24, "8.vvm", "VOICEVOX:WhiteCUL"),
-            new Option("WhiteCUL / かなしい", 25, "8.vvm", "VOICEVOX:WhiteCUL"),
-            new Option("WhiteCUL / びえーん", 26, "8.vvm", "VOICEVOX:WhiteCUL"),
-            new Option("四国めたん / ノーマル", 2, "0.vvm", "VOICEVOX:四国めたん"),
-            new Option("四国めたん / あまあま", 0, "0.vvm", "VOICEVOX:四国めたん"),
-            new Option("四国めたん / ツンツン", 6, "0.vvm", "VOICEVOX:四国めたん"),
-            new Option("四国めたん / セクシー", 4, "0.vvm", "VOICEVOX:四国めたん")
+            new Option("WhiteCUL", 23, "8.vvm", "VOICEVOX:WhiteCUL"),
+            new Option("四国めたん", 2, "0.vvm", "VOICEVOX:四国めたん"),
+            new Option("玄野武宏", 11, "4.vvm", "VOICEVOX:玄野武宏"),
+            new Option("No.7", 29, "6.vvm", "VOICEVOX:No.7")
     ));
 
     static Option byStyleId(int styleId) {
@@ -40,6 +36,18 @@ final class VoiceOptions {
             if (option.styleId == styleId) return option;
         }
         return ALL.get(0);
+    }
+
+    static Option fromVoiceName(String voiceName) {
+        if (voiceName == null || !voiceName.startsWith("voicevox:")) return null;
+        try {
+            int styleId = Integer.parseInt(voiceName.substring("voicevox:".length()));
+            for (Option option : ALL) {
+                if (option.styleId == styleId) return option;
+            }
+        } catch (NumberFormatException ignored) {
+        }
+        return null;
     }
 
     private VoiceOptions() {}

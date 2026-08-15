@@ -5,13 +5,18 @@ import android.speech.tts.SynthesisCallback;
 import android.speech.tts.SynthesisRequest;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.TextToSpeechService;
+import android.speech.tts.Voice;
 import android.util.Log;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public final class VoicevoxTtsService extends TextToSpeechService {
     private static final String TAG = "VoicevoxTtsService";
+    static final String VOICE_PREFIX = "voicevox:";
     private final AtomicBoolean stopped = new AtomicBoolean(false);
 
     @Override
@@ -38,6 +43,43 @@ public final class VoicevoxTtsService extends TextToSpeechService {
     }
 
     @Override
+    public List<Voice> onGetVoices() {
+        List<Voice> voices = new ArrayList<>();
+        for (VoiceOptions.Option option : VoiceOptions.ALL) {
+            voices.add(toVoice(option));
+        }
+        return voices;
+    }
+
+    @Override
+    public String onGetDefaultVoiceNameFor(String lang, String country, String variant) {
+        if (onIsLanguageAvailable(lang, country, variant) == TextToSpeech.LANG_NOT_SUPPORTED) {
+            return null;
+        }
+        return VOICE_PREFIX + Prefs.getStyleId(this);
+    }
+
+    @Override
+    public int onIsValidVoiceName(String voiceName) {
+        return VoiceOptions.fromVoiceName(voiceName) != null
+                ? TextToSpeech.SUCCESS
+                : TextToSpeech.ERROR;
+    }
+
+    @Override
+    public int onLoadVoice(String voiceName) {
+        VoiceOptions.Option option = VoiceOptions.fromVoiceName(voiceName);
+        if (option == null) return TextToSpeech.ERROR;
+        try {
+            VoicevoxRuntime.get(this).ensureReadyForStyle(option.styleId);
+            return TextToSpeech.SUCCESS;
+        } catch (Throwable t) {
+            Log.e(TAG, "onLoadVoice failed: " + voiceName, t);
+            return TextToSpeech.ERROR;
+        }
+    }
+
+    @Override
     protected void onStop() {
         stopped.set(true);
     }
@@ -53,7 +95,11 @@ public final class VoicevoxTtsService extends TextToSpeechService {
             return;
         }
 
-        int styleId = Prefs.getStyleId(this);
+        int styleId = resolveStyleId(request);
+        Log.i(TAG, "onSynthesizeText voice=" + request.getVoiceName()
+                + " prefs=" + Prefs.getStyleId(this)
+                + " resolved=" + styleId
+                + " chars=" + text.length());
         try {
             byte[] wav = VoicevoxRuntime.get(this).synthesize(text, styleId, request.getSpeechRate());
             if (stopped.get()) return;
@@ -86,5 +132,21 @@ public final class VoicevoxTtsService extends TextToSpeechService {
             Log.e(TAG, "Synthesis failed", t);
             callback.error(TextToSpeech.ERROR_SYNTHESIS);
         }
+    }
+
+    private int resolveStyleId(SynthesisRequest request) {
+        VoiceOptions.Option fromVoice = VoiceOptions.fromVoiceName(request.getVoiceName());
+        if (fromVoice != null) return fromVoice.styleId;
+        return Prefs.getStyleId(this);
+    }
+
+    private static Voice toVoice(VoiceOptions.Option option) {
+        return new Voice(
+                VOICE_PREFIX + option.styleId,
+                Locale.JAPAN,
+                Voice.QUALITY_NORMAL,
+                Voice.LATENCY_NORMAL,
+                false,
+                Collections.<String>emptySet());
     }
 }

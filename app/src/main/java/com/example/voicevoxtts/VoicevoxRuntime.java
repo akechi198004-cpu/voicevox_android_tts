@@ -1,6 +1,8 @@
 package com.example.voicevoxtts;
 
+import android.app.ActivityManager;
 import android.content.Context;
+import android.os.Debug;
 import android.system.Os;
 import android.util.Log;
 
@@ -23,6 +25,10 @@ final class VoicevoxRuntime {
     private AssetInstaller installer;
     private final Set<String> loadedModels = new HashSet<>();
 
+    private long lastCoreInitMs = -1;
+    private long lastModelLoadMs = -1;
+    private String lastLoadedModel = "";
+
     static VoicevoxRuntime get(Context context) {
         VoicevoxRuntime local = instance;
         if (local == null) {
@@ -41,6 +47,10 @@ final class VoicevoxRuntime {
         this.context = context;
     }
 
+    synchronized boolean isCoreReady() {
+        return synthesizer != null;
+    }
+
     synchronized void ensureReadyForStyle(int styleId) throws Exception {
         if (synthesizer == null) initializeCore();
         VoiceOptions.Option option = VoiceOptions.byStyleId(styleId);
@@ -50,13 +60,16 @@ final class VoicevoxRuntime {
             try (VoiceModelFile voiceModel = new VoiceModelFile(model.getAbsolutePath())) {
                 synthesizer.loadVoiceModel(voiceModel).perform();
             }
+            lastModelLoadMs = System.currentTimeMillis() - begin;
+            lastLoadedModel = option.modelAsset;
             loadedModels.add(option.modelAsset);
-            Log.i(TAG, "Loaded " + option.modelAsset + " in " + (System.currentTimeMillis() - begin) + " ms");
+            Log.i(TAG, "Loaded " + option.modelAsset + " in " + lastModelLoadMs + " ms");
         }
     }
 
     synchronized byte[] synthesize(String text, int styleId, int androidSpeechRate) throws Exception {
         ensureReadyForStyle(styleId);
+        VoiceOptions.Option option = VoiceOptions.byStyleId(styleId);
         long begin = System.currentTimeMillis();
 
         AudioQuery query = synthesizer.createAudioQuery(text, styleId);
@@ -67,14 +80,46 @@ final class VoicevoxRuntime {
         query.outputStereo = false;
 
         byte[] wav = synthesizer.synthesis(query, styleId).perform();
-        Log.i(TAG, "Synthesized style=" + styleId + ", chars=" + text.length()
-                + ", wav=" + wav.length + " bytes, elapsed=" + (System.currentTimeMillis() - begin) + " ms");
+        long synthesisMs = System.currentTimeMillis() - begin;
+        WavPcm pcm = WavPcm.parse(wav);
+        double audioSec = pcm.dataLength / (double) (pcm.sampleRate * pcm.channelCount * (pcm.bitsPerSample / 8));
+
+        Log.i(TAG, "VoicevoxTTS:\n"
+                + "core init = " + lastCoreInitMs + "ms\n"
+                + "model load = " + lastModelLoadMs + "ms (" + lastLoadedModel + ")\n"
+                + "chars = " + text.length() + "\n"
+                + "style = " + option.label + " / id=" + styleId + "\n"
+                + "synthesis = " + synthesisMs + "ms\n"
+                + "audio = " + String.format("%.2f", audioSec) + "s\n"
+                + "wav = " + wav.length + " bytes\n"
+                + memorySummary());
         return wav;
     }
 
     synchronized String diagnosticSummary() {
-        if (synthesizer == null) return "Core not initialized yet";
-        return "Core initialized / models=" + loadedModels;
+        if (synthesizer == null) return "未初期化";
+        return "準備完了\n"
+                + "読み込み済みモデル=" + loadedModels + "\n"
+                + "Core初期化=" + lastCoreInitMs + "ms\n"
+                + "前回のモデル読み込み=" + lastModelLoadMs + "ms（" + lastLoadedModel + "）\n"
+                + memorySummary();
+    }
+
+    String memorySummary() {
+        Runtime rt = Runtime.getRuntime();
+        long javaUsedMb = (rt.totalMemory() - rt.freeMemory()) / (1024 * 1024);
+        long javaMaxMb = rt.maxMemory() / (1024 * 1024);
+        long nativeMb = Debug.getNativeHeapAllocatedSize() / (1024 * 1024);
+        long availMb = -1;
+        ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+        if (am != null) {
+            ActivityManager.MemoryInfo info = new ActivityManager.MemoryInfo();
+            am.getMemoryInfo(info);
+            availMb = info.availMem / (1024 * 1024);
+        }
+        return "メモリ Java=" + javaUsedMb + "MB/" + javaMaxMb + "MB"
+                + " NativeHeap=" + nativeMb + "MB"
+                + " 利用可能=" + availMb + "MB";
     }
 
     private void initializeCore() throws Exception {
@@ -97,7 +142,8 @@ final class VoicevoxRuntime {
         synthesizer = Synthesizer.builder(onnxruntime, openJtalk)
                 .cpuNumThreads(Math.max(1, Math.min(4, Runtime.getRuntime().availableProcessors())))
                 .build();
-        Log.i(TAG, "Core initialized in " + (System.currentTimeMillis() - begin)
+        lastCoreInitMs = System.currentTimeMillis() - begin;
+        Log.i(TAG, "Core initialized in " + lastCoreInitMs
                 + " ms; nativeLibraryDir=" + context.getApplicationInfo().nativeLibraryDir);
     }
 }

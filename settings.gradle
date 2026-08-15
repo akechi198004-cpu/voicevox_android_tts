@@ -11,7 +11,7 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        maven { url = uri(rootProject.file("third_party/maven")) }
+        maven { url = uri("${settingsDir}/third_party/maven") }
     }
 }
 
