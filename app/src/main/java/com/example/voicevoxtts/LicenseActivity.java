@@ -52,22 +52,24 @@ public final class LicenseActivity extends Activity {
     }
 
     private String buildText() {
-        return "第三者ソフトウェア・ライセンス\n\n"
-                + "VOICEVOX\n\n"
-                + "VOICEVOX Core 0.17.0\n"
-                + "MITライセンス\n\n"
-                + "VOICEVOX:WhiteCUL\n"
-                + "VOICEVOX:四国めたん\n"
-                + "VOICEVOX:玄野武宏\n"
-                + "VOICEVOX:No.7\n\n"
-                + "VOICEVOX ONNX Runtime 1.23.2\n"
-                + "Open JTalk辞書 1.11\n"
-                + "VVM 0.17.0 (0.vvm / 4.vvm / 6.vvm / 8.vvm)\n\n"
-                + "注意：No.7 の商用利用は No.7 製作委員会への事前確認が必要です。\n\n"
-                + "生成音声を利用する際は、各音声ライブラリの規約に従い、\n"
-                + "VOICEVOX を利用したことがわかるクレジット表記が必要です。\n\n"
-                + "--- VOICEVOX Core MIT ---\n\n"
-                + readAsset("licenses/VOICEVOX_CORE_LICENSE.txt");
+        StringBuilder text = new StringBuilder();
+        text.append("第三者ソフトウェア・ライセンス\n\n");
+        text.append("VOICEVOX\n\n");
+        text.append("VOICEVOX Core 0.17.0\n");
+        text.append("MITライセンス\n\n");
+        for (String credit : ApprovedVoices.credits()) {
+            if ("VOICEVOX".equals(credit) || credit.startsWith("VOICEVOX Core")) continue;
+            text.append(credit).append('\n');
+        }
+        text.append("\nVOICEVOX ONNX Runtime 1.23.2\n");
+        text.append("Open JTalk辞書 1.11\n");
+        text.append("VVM 0.17.0 (0.vvm / 4.vvm / 8.vvm / n0.vvm)\n\n");
+        text.append("0.vvm にはずんだもんも含まれます。表示の有無にかかわらずクレジットを保持します。\n\n");
+        text.append("生成音声を利用する際は、各音声ライブラリの規約に従い、\n");
+        text.append("VOICEVOX を利用したことがわかるクレジット表記が必要です。\n\n");
+        text.append("--- VOICEVOX Core MIT ---\n\n");
+        text.append(readAsset("licenses/VOICEVOX_CORE_LICENSE.txt"));
+        return text.toString();
     }
 
     private String readAsset(String path) {

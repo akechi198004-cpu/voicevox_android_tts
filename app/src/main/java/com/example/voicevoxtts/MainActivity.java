@@ -53,7 +53,7 @@ public final class MainActivity extends Activity {
 
         TextView desc = new TextView(this);
         desc.setText("VOICEVOX CoreをAndroid標準のTextToSpeechServiceとして組み込みます。\n"
-                + "この検証アプリはarm64-v8aのみ対応。話者：WhiteCUL / 四国めたん / 玄野武宏 / No.7。");
+                + "この検証アプリはarm64-v8aのみ対応。承認済みの平和な音色だけを公開します。");
         desc.setTextSize(15);
         desc.setPadding(0, dp(12), 0, dp(16));
         root.addView(desc);
@@ -67,8 +67,8 @@ public final class MainActivity extends Activity {
         root.addView(voiceLabel);
 
         Spinner spinner = new Spinner(this);
-        List<VoiceOptions.Option> options = new ArrayList<>(VoiceOptions.ALL);
-        ArrayAdapter<VoiceOptions.Option> adapter = new ArrayAdapter<>(this,
+        List<ApprovedVoices.Option> options = new ArrayList<>(ApprovedVoices.visible());
+        ArrayAdapter<ApprovedVoices.Option> adapter = new ArrayAdapter<>(this,
                 android.R.layout.simple_spinner_dropdown_item, options);
         spinner.setAdapter(adapter);
         int savedStyle = Prefs.getStyleId(this);
@@ -79,7 +79,7 @@ public final class MainActivity extends Activity {
         spinner.setSelection(selected);
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                VoiceOptions.Option option = options.get(position);
+                ApprovedVoices.Option option = options.get(position);
                 Prefs.setStyleId(MainActivity.this, option.styleId);
                 refreshStatus();
             }
@@ -128,14 +128,13 @@ public final class MainActivity extends Activity {
         root.addView(deviceBody);
 
         TextView credits = new TextView(this);
-        credits.setText("クレジット\n"
-                + "VOICEVOX Core 0.17.0（MIT）\n"
-                + "VOICEVOX ONNX Runtime 1.23.2\n"
-                + "VOICEVOX:WhiteCUL\n"
-                + "VOICEVOX:四国めたん\n"
-                + "VOICEVOX:玄野武宏\n"
-                + "VOICEVOX:No.7\n\n"
-                + "検証用途です。正式導入前に各音声ライブラリの最新利用規約を再確認してください。");
+        StringBuilder creditText = new StringBuilder("クレジット\n");
+        for (String credit : ApprovedVoices.credits()) {
+            creditText.append(credit).append('\n');
+        }
+        creditText.append("VOICEVOX ONNX Runtime 1.23.2\n\n")
+                .append("検証用途です。正式導入前に各音声ライブラリの最新利用規約を再確認してください。");
+        credits.setText(creditText.toString());
         credits.setTextSize(13);
         root.addView(credits);
 
@@ -175,7 +174,7 @@ public final class MainActivity extends Activity {
                 return;
             }
             int lang = tts.setLanguage(Locale.JAPAN);
-            VoiceOptions.Option option = VoiceOptions.byStyleId(Prefs.getStyleId(this));
+            ApprovedVoices.Option option = ApprovedVoices.byStyleId(Prefs.getStyleId(this));
             android.speech.tts.Voice selected = findVoice(tts, option.styleId);
             if (selected != null) {
                 tts.setVoice(selected);
@@ -217,7 +216,7 @@ public final class MainActivity extends Activity {
     }
 
     private void refreshStatus() {
-        VoiceOptions.Option option = VoiceOptions.byStyleId(Prefs.getStyleId(this));
+        ApprovedVoices.Option option = ApprovedVoices.byStyleId(Prefs.getStyleId(this));
         if (coreStatus != null) {
             coreStatus.setText(VoicevoxRuntime.get(this).isCoreReady()
                     ? VoicevoxRuntime.get(this).diagnosticSummary()

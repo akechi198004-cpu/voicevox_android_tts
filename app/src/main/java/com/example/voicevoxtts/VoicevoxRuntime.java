@@ -53,7 +53,7 @@ final class VoicevoxRuntime {
 
     synchronized void ensureReadyForStyle(int styleId) throws Exception {
         if (synthesizer == null) initializeCore();
-        VoiceOptions.Option option = VoiceOptions.byStyleId(styleId);
+        ApprovedVoices.Option option = ApprovedVoices.byStyleId(styleId);
         if (!loadedModels.contains(option.modelAsset)) {
             File model = installer.installModel(option.modelAsset);
             long begin = System.currentTimeMillis();
@@ -69,7 +69,7 @@ final class VoicevoxRuntime {
 
     synchronized byte[] synthesize(String text, int styleId, int androidSpeechRate) throws Exception {
         ensureReadyForStyle(styleId);
-        VoiceOptions.Option option = VoiceOptions.byStyleId(styleId);
+        ApprovedVoices.Option option = ApprovedVoices.byStyleId(styleId);
         long begin = System.currentTimeMillis();
 
         AudioQuery query = synthesizer.createAudioQuery(text, styleId);

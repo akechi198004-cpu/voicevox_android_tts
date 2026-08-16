@@ -29,14 +29,20 @@ PCM → システム再生
 
 ### 話者
 
-各キャラクターは落ち着いたノーマルのみです。
+承認済みの落ち着いたノーマルのみです。VVM 内の他 Style は公開しません。
 
 | 話者 | style ID | モデル | クレジット |
 |------|----------|--------|------------|
 | WhiteCUL | 23 | `8.vvm` | VOICEVOX:WhiteCUL |
 | 四国めたん | 2 | `0.vvm` | VOICEVOX:四国めたん |
+| ずんだもん | 3 | `0.vvm` | VOICEVOX:ずんだもん |
+| 春日部つむぎ | 8 | `0.vvm` | VOICEVOX:春日部つむぎ |
+| 雨晴はう | 10 | `0.vvm` | VOICEVOX:雨晴はう |
 | 玄野武宏 | 11 | `4.vvm` | VOICEVOX:玄野武宏 |
-| No.7 | 29 | `6.vvm` | VOICEVOX:No.7 |
+| 剣崎雌雄 | 21 | `4.vvm` | VOICEVOX:剣崎雌雄 |
+| 女声1〜6 / 男声1〜3 | 10005 等 | `n0.vvm` | VOICEVOX Nemo |
+
+ずんだもんは `ApprovedVoices.SHOW_ZUNDAMON` で非表示にできます。
 
 ## 動作環境
 
@@ -45,7 +51,7 @@ PCM → システム再生
 - 固定の業務用タブレット（Android 14 前後の ARM64 端末）を想定
 - VOICEVOX Core Java/Android **0.17.0**
 - VOICEVOX ONNX Runtime Android arm64 CPU **1.23.2**
-- VVM **0.17.0**（`0.vvm` / `4.vvm` / `6.vvm` / `8.vvm`）
+- VVM **0.17.0**（`0.vvm` / `4.vvm` / `8.vvm` / `n0.vvm`）
 - Open JTalk 辞書 1.11
 
 アプリケーション ID：`com.example.voicevoxtts`  
@@ -73,7 +79,7 @@ Linux / macOS：
 1. Core 0.17.0 Android Java パッケージ
 2. `libvoicevox_onnxruntime.so`（arm64 1.23.2）
 3. Open JTalk 辞書
-4. `0.vvm` / `4.vvm` / `6.vvm` / `8.vvm`
+4. `0.vvm` / `4.vvm` / `8.vvm` / `n0.vvm`
 
 公式ダウンローダーは VOICEVOX / VVM の利用規約への同意を求めます。
 
@@ -106,7 +112,7 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
 1. `VOICEVOX TTS 検証` を開く
-2. 話者を選ぶ（WhiteCUL / 四国めたん / 玄野武宏 / No.7）
+2. 話者を選ぶ（キャラクター音声または VOICEVOX Nemo）
 3. 「Core初期化テスト」で Core が起動することを確認する
 4. 「読み上げテスト」で本エンジンが読めることを確認する
 5. 「システムTTS設定を開く」から、システムのデフォルト TTS を本アプリにする
@@ -186,7 +192,7 @@ new TextToSpeech(context, listener, "com.example.voicevoxtts");
 
 - VOICEVOX Core 0.17.0：MIT（`app/src/main/assets/licenses/VOICEVOX_CORE_LICENSE.txt`）
 - 生成音声は各音声ライブラリの規約に従い、VOICEVOX 利用が分かるクレジットが必要です
-- WhiteCUL / 四国めたん / 玄野武宏：公式のクレジット表記があれば商用・非商用で利用可能
-- No.7：個人の非商用利用は可能。その他の商用利用は No.7 製作委員会への事前確認が必要
+- WhiteCUL / 四国めたん / ずんだもん / 春日部つむぎ / 雨晴はう / 玄野武宏 / 剣崎雌雄：公式のクレジット表記があれば商用・非商用で利用可能
+- VOICEVOX Nemo：クレジット `VOICEVOX Nemo` があれば商用・非商用で利用可能
 
 正式導入前に、最新の公式規約を再確認してください。

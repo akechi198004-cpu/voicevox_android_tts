@@ -45,7 +45,7 @@ public final class VoicevoxTtsService extends TextToSpeechService {
     @Override
     public List<Voice> onGetVoices() {
         List<Voice> voices = new ArrayList<>();
-        for (VoiceOptions.Option option : VoiceOptions.ALL) {
+        for (ApprovedVoices.Option option : ApprovedVoices.visible()) {
             voices.add(toVoice(option));
         }
         return voices;
@@ -61,14 +61,14 @@ public final class VoicevoxTtsService extends TextToSpeechService {
 
     @Override
     public int onIsValidVoiceName(String voiceName) {
-        return VoiceOptions.fromVoiceName(voiceName) != null
+        return ApprovedVoices.fromVoiceName(voiceName) != null
                 ? TextToSpeech.SUCCESS
                 : TextToSpeech.ERROR;
     }
 
     @Override
     public int onLoadVoice(String voiceName) {
-        VoiceOptions.Option option = VoiceOptions.fromVoiceName(voiceName);
+        ApprovedVoices.Option option = ApprovedVoices.fromVoiceName(voiceName);
         if (option == null) return TextToSpeech.ERROR;
         try {
             VoicevoxRuntime.get(this).ensureReadyForStyle(option.styleId);
@@ -135,12 +135,12 @@ public final class VoicevoxTtsService extends TextToSpeechService {
     }
 
     private int resolveStyleId(SynthesisRequest request) {
-        VoiceOptions.Option fromVoice = VoiceOptions.fromVoiceName(request.getVoiceName());
+        ApprovedVoices.Option fromVoice = ApprovedVoices.fromVoiceName(request.getVoiceName());
         if (fromVoice != null) return fromVoice.styleId;
         return Prefs.getStyleId(this);
     }
 
-    private static Voice toVoice(VoiceOptions.Option option) {
+    private static Voice toVoice(ApprovedVoices.Option option) {
         return new Voice(
                 VOICE_PREFIX + option.styleId,
                 Locale.JAPAN,

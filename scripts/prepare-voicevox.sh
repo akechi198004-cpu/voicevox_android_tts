@@ -50,9 +50,11 @@ case "$UNAME_S/$UNAME_M" in
 esac
 curl -fL "https://github.com/VOICEVOX/voicevox_core/releases/download/$CORE_VERSION/$DOWNLOADER" -o "$TMP/download"
 chmod +x "$TMP/download"
-"$TMP/download" -o "$TMP/runtime" --only models dict --models-version "$MODELS_VERSION" --models-pattern '[0468].vvm'
+"$TMP/download" -o "$TMP/runtime" --only models dict --models-version "$MODELS_VERSION" --models-pattern '[048].vvm'
+"$TMP/download" -o "$TMP/runtime" --only models --models-version "$MODELS_VERSION" --models-pattern 'n0.vvm'
 
-for MODEL in 0.vvm 4.vvm 6.vvm 8.vvm; do
+rm -f "$ASSETS_OUT/models/6.vvm"
+for MODEL in 0.vvm 4.vvm 8.vvm n0.vvm; do
   SRC="$(find "$TMP/runtime" -path '*/vvms/*' -name "$MODEL" -print -quit)"
   [[ -n "$SRC" ]] || { echo "Model $MODEL not found" >&2; exit 1; }
   cp "$SRC" "$ASSETS_OUT/models/$MODEL"

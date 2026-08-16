@@ -55,13 +55,16 @@ $RuntimeDir = Join-Path $Tmp "runtime"
 Write-Host "[3/4] Downloading official VOICEVOX downloader..."
 Invoke-WebRequest $DownloaderUrl -OutFile $Downloader
 Write-Host "The following command may ask for terms acceptance." -ForegroundColor Yellow
-& $Downloader -o $RuntimeDir --only models dict --models-version $ModelsVersion --models-pattern '[0468].vvm'
+& $Downloader -o $RuntimeDir --only models dict --models-version $ModelsVersion --models-pattern '[048].vvm'
+if ($LASTEXITCODE -ne 0) { throw "VOICEVOX downloader failed with $LASTEXITCODE" }
+& $Downloader -o $RuntimeDir --only models --models-version $ModelsVersion --models-pattern 'n0.vvm'
 if ($LASTEXITCODE -ne 0) { throw "VOICEVOX downloader failed with $LASTEXITCODE" }
 
 $ModelsDst = Join-Path $AssetsOut "models"
 $DictDst = Join-Path $AssetsOut "dict"
 New-Item -ItemType Directory -Force $ModelsDst, $DictDst | Out-Null
-foreach ($Name in @("0.vvm", "4.vvm", "6.vvm", "8.vvm")) {
+Remove-Item (Join-Path $ModelsDst "6.vvm") -Force -ErrorAction SilentlyContinue
+foreach ($Name in @("0.vvm", "4.vvm", "8.vvm", "n0.vvm")) {
     $Model = Get-ChildItem $RuntimeDir -Recurse -Filter $Name | Where-Object { $_.FullName -match "vvms" } | Select-Object -First 1
     if (-not $Model) { throw "Model $Name not found" }
     Copy-Item $Model.FullName (Join-Path $ModelsDst $Name) -Force
@@ -76,8 +79,8 @@ $Checks = @(
     (Join-Path $JniOut "libvoicevox_onnxruntime.so"),
     (Join-Path $ModelsDst "0.vvm"),
     (Join-Path $ModelsDst "4.vvm"),
-    (Join-Path $ModelsDst "6.vvm"),
     (Join-Path $ModelsDst "8.vvm"),
+    (Join-Path $ModelsDst "n0.vvm"),
     (Join-Path $DictDst "open_jtalk_dic_utf_8-1.11")
 )
 foreach ($Path in $Checks) {

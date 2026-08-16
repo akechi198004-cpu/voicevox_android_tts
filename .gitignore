@@ -3,6 +3,7 @@
 .idea/
 local.properties
 **/build/
+dist/
 .voicevox-download/
 *.iml
 # Downloaded third party runtime/model binaries

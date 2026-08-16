@@ -1,6 +1,6 @@
 This directory is populated by scripts/prepare-voicevox.ps1 or .sh.
-Expected POC models:
-- 0.vvm : 四国めたん (+ other voices in the same model)
-- 4.vvm : 玄野武宏 (male) / 剣崎雌雄
-- 6.vvm : No.7
+Expected models:
+- 0.vvm : 四国めたん / ずんだもん / 春日部つむぎ / 雨晴はう
+- 4.vvm : 玄野武宏 / 剣崎雌雄
 - 8.vvm : WhiteCUL
+- n0.vvm : VOICEVOX Nemo
